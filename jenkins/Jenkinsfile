@@ -67,6 +67,7 @@ pipeline {
             }
         }
 
+    
         stage('5. Container Image Vulnerability Gate (Trivy Image)') {
             parallel {
                 stage('Scan Backend Image') {
