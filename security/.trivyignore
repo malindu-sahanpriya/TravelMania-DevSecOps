@@ -1,0 +1,2 @@
+# Document any triaged/accepted CVEs here with justification and expiry date
+# Example: CVE-2024-XXXX (Unfixed in upstream lib, not exploitable in our runtime)

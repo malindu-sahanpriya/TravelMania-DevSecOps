@@ -1,0 +1,121 @@
+pipeline {
+    agent any
+
+    environment {
+        BACKEND_IMAGE  = "travelmania-backend"
+        FRONTEND_IMAGE = "travelmania-frontend"
+        IMAGE_TAG      = "build-${env.BUILD_NUMBER}"
+        DOCKER_DIR     = "C:\\Users\\malin_m8a68gv\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin"
+        DOCKER_BIN     = "C:\\Users\\malin_m8a68gv\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe"
+        PATH           = "C:\\Users\\malin_m8a68gv\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
+    }
+
+    stages {
+        stage('1. Checkout & Workspace Clean') {
+            steps {
+                checkout scm
+                bat '''
+                    if not exist security mkdir security
+                    if not exist security\\.trivyignore type nul > security\\.trivyignore
+                '''
+            }
+        }
+
+        stage('2. Secret Detection (Gitleaks)') {
+            steps {
+                echo 'Scanning Git repository for hardcoded secrets...'
+                bat '''
+                    "%DOCKER_BIN%" run --rm -v "%CD%:/repo" ^
+                        -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0=/repo ^
+                        zricethezav/gitleaks:latest detect ^
+                        --source="/repo" ^
+                        --report-format json ^
+                        --report-path "/repo/security/gitleaks-report.json" ^
+                        --verbose
+                '''
+            }
+        }
+
+        stage('3. Dependency & IaC Scan (Trivy FS)') {
+            steps {
+                echo 'Scanning NPM lockfiles and Dockerfiles for vulnerabilities & misconfigurations...'
+                bat '''
+                    "%DOCKER_BIN%" run --rm -v "%CD%:/repo" -v trivy-cache:/root/.cache/ aquasec/trivy:latest fs ^
+                        --scanners vuln,misconfig ^
+                        --skip-files "/repo/backend/pom.xml" ^
+                        --severity HIGH,CRITICAL ^
+                        --ignorefile /repo/security/.trivyignore ^
+                        --format json ^
+                        --output /repo/security/trivy-fs-report.json ^
+                        --exit-code 0 /repo
+                '''
+            }
+        }
+
+        stage('4. Build Hardened Container Images') {
+            parallel {
+                stage('Build Backend') {
+                    steps {
+                        bat "\"%DOCKER_BIN%\" build -t ${BACKEND_IMAGE}:${IMAGE_TAG} -t ${BACKEND_IMAGE}:latest ./backend"
+                    }
+                }
+                stage('Build Frontend') {
+                    steps {
+                        bat "\"%DOCKER_BIN%\" build -t ${FRONTEND_IMAGE}:${IMAGE_TAG} -t ${FRONTEND_IMAGE}:latest ./frontend"
+                    }
+                }
+            }
+        }
+
+        stage('5. Container Image Vulnerability Gate (Trivy Image)') {
+            parallel {
+                stage('Scan Backend Image') {
+                    steps {
+                        bat """
+                            "%DOCKER_BIN%" save -o security/backend-image.tar ${BACKEND_IMAGE}:${IMAGE_TAG}
+                            "%DOCKER_BIN%" run --rm -v "%CD%:/repo" -v trivy-cache:/root/.cache/ aquasec/trivy:latest image ^
+                                --input /repo/security/backend-image.tar ^
+                                --timeout 15m ^
+                                --scanners vuln ^
+                                --severity CRITICAL ^
+                                --ignore-unfixed ^
+                                --format json ^
+                                --output /repo/security/trivy-backend-image-report.json ^
+                                --exit-code 1
+                        """
+                    }
+                }
+                stage('Scan Frontend Image') {
+                    steps {
+                        bat """
+                            "%DOCKER_BIN%" save -o security/frontend-image.tar ${FRONTEND_IMAGE}:${IMAGE_TAG}
+                            "%DOCKER_BIN%" run --rm -v "%CD%:/repo" -v trivy-cache:/root/.cache/ aquasec/trivy:latest image ^
+                                --input /repo/security/frontend-image.tar ^
+                                --timeout 15m ^
+                                --scanners vuln ^
+                                --severity CRITICAL ^
+                                --ignore-unfixed ^
+                                --format json ^
+                                --output /repo/security/trivy-frontend-image-report.json ^
+                                --exit-code 1
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            echo 'Archiving DevSecOps Security Reports...'
+            archiveArtifacts artifacts: 'security/*-report.json', allowEmptyArchive: true
+            bat 'if exist security\\*.tar del /q security\\*.tar'
+        }
+        success {
+            echo "Pipeline Passed All Security Gates! Images ready: ${BACKEND_IMAGE}:${IMAGE_TAG}"
+        }
+        failure {
+            echo 'Security Gate or Build Failed! Inspect archived JSON reports in security/.'
+        }
+    }
+}

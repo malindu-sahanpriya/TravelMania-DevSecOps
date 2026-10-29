@@ -1,0 +1,22 @@
+# IDEs & OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Environment & Secrets
+.env
+*.env
+*.pem
+*.key
+
+# Build & Dependency Folders
+backend/target/
+backend/.mvn/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# Security Scan Reports (generated locally/CI)
+security/*-report.json
+security/*-report.html

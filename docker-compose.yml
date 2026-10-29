@@ -1,0 +1,78 @@
+services:
+  postgres:
+    image: postgis/postgis:16-3.4-alpine
+    container_name: travelmania-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - data-net
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: travelmania-backend:local
+    container_name: travelmania-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    networks:
+      - data-net
+      - edge-net
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: travelmania-frontend:local
+    container_name: travelmania-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:8080"
+    networks:
+      - edge-net
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/cache/nginx
+      - /var/run
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  pgdata:
+
+networks:
+  edge-net:
+    driver: bridge
+  data-net:
+    driver: bridge
+    internal: true
