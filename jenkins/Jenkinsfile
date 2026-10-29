@@ -72,32 +72,28 @@ pipeline {
                 stage('Scan Backend Image') {
                     steps {
                         bat """
-                            "%DOCKER_BIN%" save -o security/backend-image.tar ${BACKEND_IMAGE}:${IMAGE_TAG}
-                            "%DOCKER_BIN%" run --rm -v "%CD%:/repo" -v trivy-cache:/root/.cache/ aquasec/trivy:latest image ^
-                                --input /repo/security/backend-image.tar ^
+                            "%DOCKER_BIN%" run --rm -v "%CD%:/repo" -v trivy-cache-backend:/root/.cache/ aquasec/trivy:latest image ^
                                 --timeout 15m ^
                                 --scanners vuln ^
                                 --severity CRITICAL ^
                                 --ignore-unfixed ^
                                 --format json ^
                                 --output /repo/security/trivy-backend-image-report.json ^
-                                --exit-code 1
+                                --exit-code 1 travelmania-backend:build-%BUILD_NUMBER%
                         """
                     }
                 }
                 stage('Scan Frontend Image') {
                     steps {
                         bat """
-                            "%DOCKER_BIN%" save -o security/frontend-image.tar ${FRONTEND_IMAGE}:${IMAGE_TAG}
-                            "%DOCKER_BIN%" run --rm -v "%CD%:/repo" -v trivy-cache:/root/.cache/ aquasec/trivy:latest image ^
-                                --input /repo/security/frontend-image.tar ^
+                            "%DOCKER_BIN%" run --rm -v "%CD%:/repo" -v trivy-cache-frontend:/root/.cache/ aquasec/trivy:latest image ^
                                 --timeout 15m ^
                                 --scanners vuln ^
                                 --severity CRITICAL ^
                                 --ignore-unfixed ^
                                 --format json ^
                                 --output /repo/security/trivy-frontend-image-report.json ^
-                                --exit-code 1
+                                --exit-code 1 travelmania-frontend:build-%BUILD_NUMBER%
                         """
                     }
                 }
