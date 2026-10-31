@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: travelmania-frontend
+  namespace: travelmania
+  labels:
+    app: travelmania-frontend
+    tier: frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: travelmania-frontend
+  template:
+    metadata:
+      labels:
+        app: travelmania-frontend
+        tier: frontend
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: frontend
+          image: travelmania-frontend:latest
+          imagePullPolicy: IfNotPresent
+          # Launch Nginx directly to prevent /docker-entrypoint.d/ from writing to read-only /etc/nginx
+          command: ["nginx", "-g", "daemon off;"]
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "300m"
+              memory: "256Mi"
+          volumeMounts:
+            - name: nginx-cache
+              mountPath: /var/cache/nginx
+            - name: nginx-run
+              mountPath: /var/run
+            - name: tmp-dir
+              mountPath: /tmp
+      volumes:
+        - name: nginx-cache
+          emptyDir: {}
+        - name: nginx-run
+          emptyDir: {}
+        - name: tmp-dir
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: travelmania-frontend
+  namespace: travelmania
+spec:
+  type: NodePort
+  selector:
+    app: travelmania-frontend
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080
+---
+# Alias 'backend' DNS name so Docker Compose nginx.conf proxy_pass http://backend:8080 works in K8s
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+  namespace: travelmania
+spec:
+  type: ClusterIP
+  selector:
+    app: travelmania-backend
+  ports:
+    - port: 8080
+      targetPort: 8080

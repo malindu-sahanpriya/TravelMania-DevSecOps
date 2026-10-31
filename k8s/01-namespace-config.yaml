@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: travelmania
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: restricted
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: travelmania-config
+  namespace: travelmania
+data:
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://travelmania-db:5432/travelmania"
+  SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: travelmania-secrets
+  namespace: travelmania
+type: Opaque
+stringData:
+  # In production/GitOps, injected via External Secrets Operator or SealedSecrets
+  POSTGRES_USER: "postgres"
+  POSTGRES_PASSWORD: "ChangeMeInProd_DevSecOps2026!"
+  JWT_SECRET: "TravelManiaSuperSecretKeyForJwtSigning2026DevSecOps!"
