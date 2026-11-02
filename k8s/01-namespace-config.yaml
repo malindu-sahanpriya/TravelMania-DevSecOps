@@ -12,17 +12,5 @@ metadata:
   name: travelmania-config
   namespace: travelmania
 data:
-  SPRING_DATASOURCE_URL: "jdbc:postgresql://travelmania-db:5432/travelmania"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql://ep-aged-snow-a1h2l9t2-pooler.ap-southeast-1.aws.neon.tech:5432/neondb?sslmode=require"
   SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: travelmania-secrets
-  namespace: travelmania
-type: Opaque
-stringData:
-  # In production/GitOps, injected via External Secrets Operator or SealedSecrets
-  POSTGRES_USER: "postgres"
-  POSTGRES_PASSWORD: "ChangeMeInProd_DevSecOps2026!"
-  JWT_SECRET: "TravelManiaSuperSecretKeyForJwtSigning2026DevSecOps!"
