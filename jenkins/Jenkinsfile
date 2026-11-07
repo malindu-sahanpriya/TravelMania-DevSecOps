@@ -107,24 +107,26 @@ pipeline {
         stage('6. Push Verified Images to Docker Hub') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat '''
-                        echo %DOCKER_PASS%| "%DOCKER_BIN%" login -u %DOCKER_USER% --password-stdin || exit /b 1
-
-                        "%DOCKER_BIN%" tag %BACKEND_IMAGE%:%IMAGE_TAG% %DOCKER_USER%/travelmania-backend:%IMAGE_TAG%
-                        "%DOCKER_BIN%" tag %BACKEND_IMAGE%:latest %DOCKER_USER%/travelmania-backend:latest
-                        "%DOCKER_BIN%" tag %FRONTEND_IMAGE%:%IMAGE_TAG% %DOCKER_USER%/travelmania-frontend:%IMAGE_TAG%
-                        "%DOCKER_BIN%" tag %FRONTEND_IMAGE%:latest %DOCKER_USER%/travelmania-frontend:latest
-
-                        echo Pushing Backend Image (with automatic retry on network timeout)...
-                        "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-backend:%IMAGE_TAG% || "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-backend:%IMAGE_TAG% || exit /b 1
-                        "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-backend:latest || "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-backend:latest || exit /b 1
-
-                        echo Pushing Frontend Image (with automatic retry on network timeout)...
-                        "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-frontend:%IMAGE_TAG% || "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-frontend:%IMAGE_TAG% || exit /b 1
-                        "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-frontend:latest || "%DOCKER_BIN%" push %DOCKER_USER%/travelmania-frontend:latest || exit /b 1
-
-                        "%DOCKER_BIN%" logout
-                    '''
+                    bat 'echo %DOCKER_PASS%| "%DOCKER_BIN%" login -u %DOCKER_USER% --password-stdin'
+                    script {
+                        def images = [
+                            "${BACKEND_IMAGE}:${IMAGE_TAG}",
+                            "${BACKEND_IMAGE}:latest",
+                            "${FRONTEND_IMAGE}:${IMAGE_TAG}",
+                            "${FRONTEND_IMAGE}:latest"
+                        ]
+                        images.each { img ->
+                            retry(3) {
+                                try {
+                                    bat "\"%DOCKER_BIN%\" push ${img}"
+                                } catch (e) {
+                                    sleep(time: 20, unit: 'SECONDS')
+                                    throw e
+                                }
+                            }
+                        }
+                    }
+                    bat '"%DOCKER_BIN%" logout'
                 }
             }
         }
