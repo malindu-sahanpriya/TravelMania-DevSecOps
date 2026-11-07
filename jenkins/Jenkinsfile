@@ -2,12 +2,11 @@ pipeline {
     agent any
 
     environment {
-        BACKEND_IMAGE  = "travelmania-backend"
-        FRONTEND_IMAGE = "travelmania-frontend"
+        DOCKERHUB_USER = "malindusahanpriya" 
+        BACKEND_IMAGE  = "${DOCKERHUB_USER}/travelmania-backend"
+        FRONTEND_IMAGE = "${DOCKERHUB_USER}/travelmania-frontend"
         IMAGE_TAG      = "build-${env.BUILD_NUMBER}"
-        DOCKER_DIR     = "C:\\Users\\malin_m8a68gv\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin"
         DOCKER_BIN     = "C:\\Users\\malin_m8a68gv\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin\\docker.exe"
-        PATH           = "C:\\Users\\malin_m8a68gv\\AppData\\Local\\Programs\\DockerDesktop\\resources\\bin;${env.PATH}"
     }
 
     stages {
@@ -101,6 +100,21 @@ pipeline {
                                 --exit-code 1
                         """
                     }
+                }
+            }
+        }
+
+        stage('6. Push Verified Images to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    bat '''
+                        echo %DOCKER_PASS% | "%DOCKER_BIN%" login -u %DOCKER_USER% --password-stdin
+                        "%DOCKER_BIN%" push %BACKEND_IMAGE%:%IMAGE_TAG%
+                        "%DOCKER_BIN%" push %BACKEND_IMAGE%:latest
+                        "%DOCKER_BIN%" push %FRONTEND_IMAGE%:%IMAGE_TAG%
+                        "%DOCKER_BIN%" push %FRONTEND_IMAGE%:latest
+                        "%DOCKER_BIN%" logout
+                    '''
                 }
             }
         }
