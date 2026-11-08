@@ -23,7 +23,7 @@ const ProductInfoSection = () => {
     const fetchProduct = async () => {
       try {
         if (id) {
-          const response = await axios.get(`http://localhost:8080/api/products/${id}`);
+          const response = await axios.get(`/api/products/${id}`);
           const productData = response.data;
           
           setProduct({
@@ -43,7 +43,7 @@ const ProductInfoSection = () => {
             ]
           });
         } else {
-          const response = await axios.get('http://localhost:8080/api/products/all');
+          const response = await axios.get('/api/products/all');
           const productData = response.data[0] || {};
           
           setProduct({

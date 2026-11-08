@@ -68,7 +68,7 @@ export default function Settings() {
   // Load shop data from API
   const loadShopData = async (shopId) => {
     try {
-      const response = await axios.get(`http://localhost:8080/api/shops/${shopId}`);
+      const response = await axios.get(`/api/shops/${shopId}`);
       const shopData = response.data;
       setStore({
         storeName: shopData.name || "",
@@ -115,7 +115,7 @@ export default function Settings() {
       }
 
       // Call API to update profile
-      await axios.put(`http://localhost:8080/api/users/${userId}/profile`, {
+      await axios.put(`/api/users/${userId}/profile`, {
         name: profile.name,
         email: profile.email,
         phone: profile.phone,
@@ -146,7 +146,7 @@ export default function Settings() {
       }
 
       // Call API to update shop
-      await axios.put(`http://localhost:8080/api/shops/update/${shopId}`, {
+      await axios.put(`/api/shops/update/${shopId}`, {
         name: store.storeName,
         description: store.storeDescription,
         contactNo: store.storeContactNo,
@@ -189,7 +189,7 @@ export default function Settings() {
         return;
       }
 
-      await axios.put(`http://localhost:8080/api/users/${userId}/change-password`, {
+      await axios.put(`/api/users/${userId}/change-password`, {
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
       });

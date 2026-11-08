@@ -19,7 +19,7 @@ const AllStores = () => {
   useEffect(() => {
     const fetchStores = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/shops/all');
+        const response = await axios.get('/api/shops/all');
         setStores(response.data);
       } catch (error) {
         console.error("Error fetching stores:", error);

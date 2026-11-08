@@ -39,11 +39,11 @@ export default function SellerDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ordersResponse = await axios.get(`http://localhost:8080/api/orders/user?email=${userEmail}`);
+        const ordersResponse = await axios.get(`/api/orders/user?email=${userEmail}`);
         setOrders(ordersResponse.data);
 
         if (shopId) {
-          const productsResponse = await axios.get(`http://localhost:8080/api/products/shop/${shopId}`);
+          const productsResponse = await axios.get(`/api/products/shop/${shopId}`);
           setInventory(productsResponse.data);
         }
       } catch (error) {

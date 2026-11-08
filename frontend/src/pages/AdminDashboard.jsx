@@ -22,7 +22,7 @@ const AdminDashboard = () => {
     const fetchUsers = async () => {
         try {
             // We ask the backend for the users. Spring Security will check the token!
-            const response = await fetch('http://localhost:8080/api/users', {
+            const response = await fetch('/api/users', {
                 headers: { 'Authorization': `Bearer ${token}` } 
             });
             
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
         if (!window.confirm(`Are you sure you want to completely delete user: ${userName}?`)) return;
 
         try {
-            const response = await fetch(`http://localhost:8080/api/users/${userId}`, {
+            const response = await fetch(`/api/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
             });

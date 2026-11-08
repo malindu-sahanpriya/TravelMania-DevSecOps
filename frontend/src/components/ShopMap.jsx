@@ -58,7 +58,7 @@ const ShopMap = () => {
     }, []);
 
     useEffect(() => {
-        axios.get('http://localhost:8080/api/shops/nearby', {
+        axios.get('/api/shops/nearby', {
             params: { lat: mapCenter[0], lng: mapCenter[1] }
         })
         .then(response => { setShops(response.data); })

@@ -52,7 +52,7 @@ const Checkout = () => {
     try {
         console.log("Sending Order to Backend...", orderPayload);
 
-        const response = await axios.post('http://localhost:8080/api/orders/place', orderPayload);
+        const response = await axios.post('/api/orders/place', orderPayload);
 
         if (response.status === 200 || response.status === 201) {
             alert("Order Placed Successfully! Check your Email.");

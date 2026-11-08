@@ -46,7 +46,7 @@ const Signup = ({ isOpen, onClose, onLoginSuccess, user, onLogout }) => {
             name: decoded.name
         };
 
-        const response = await fetch('http://localhost:8080/api/auth/google', {
+        const response = await fetch('/api/auth/google', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(googlePayload),
@@ -74,8 +74,8 @@ const Signup = ({ isOpen, onClose, onLoginSuccess, user, onLogout }) => {
     e.preventDefault(); 
     
     const url = isLogin 
-      ? 'http://localhost:8080/api/auth/authenticate' 
-      : 'http://localhost:8080/api/auth/register';
+      ? '/api/auth/authenticate' 
+      : '/api/auth/register';
 
     const payload = isLogin 
       ? { email: formData.email, password: formData.password }

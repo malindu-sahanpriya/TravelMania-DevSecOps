@@ -25,7 +25,7 @@ export default function SalesHistory() {
     const fetchSales = async () => {
       if (!shopId) return;
       try {
-        const response = await axios.get(`http://localhost:8080/api/orders/shop/${shopId}`);
+        const response = await axios.get(`/api/orders/shop/${shopId}`);
         // 👇 Filter to ONLY show COMPLETED orders
         const completed = response.data.filter(order => order.status === "COMPLETED");
         setCompletedOrders(completed);

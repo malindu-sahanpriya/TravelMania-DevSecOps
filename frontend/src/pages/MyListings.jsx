@@ -65,9 +65,9 @@ export default function MyListings() {
       }
 
       if (currentShopId) {
-        response = await axios.get(`http://localhost:8080/api/products/shop/${currentShopId}/category`, { params: { categoryName } });
+        response = await axios.get(`/api/products/shop/${currentShopId}/category`, { params: { categoryName } });
       } else {
-        response = await axios.get(`http://localhost:8080/api/products/category`, { params: { categoryName } });
+        response = await axios.get(`/api/products/category`, { params: { categoryName } });
       }
       setProducts(response.data);
     } catch (error) {
@@ -128,7 +128,7 @@ export default function MyListings() {
         cleaningFee: formData.cleaningFee ? parseFloat(formData.cleaningFee) : 0
       };
 
-      const response = await axios.post('http://localhost:8080/api/products/add', productData);
+      const response = await axios.post('/api/products/add', productData);
       
       if (response.status === 201 || response.status === 200) {
         alert("Product added successfully!");
@@ -147,7 +147,7 @@ export default function MyListings() {
   const handleDeleteProduct = async (productId) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      await axios.delete(`http://localhost:8080/api/products/delete/${productId}`);
+      await axios.delete(`/api/products/delete/${productId}`);
       alert("Product deleted successfully!");
       if (selectedCategory) fetchProducts(selectedCategory.name);
     } catch (error) {
@@ -183,7 +183,7 @@ export default function MyListings() {
         cleaningFee: editFormData.cleaningFee ? parseFloat(editFormData.cleaningFee) : 0
       };
 
-      const response = await axios.put(`http://localhost:8080/api/products/update/${editingProduct.id}`, updatedData);
+      const response = await axios.put(`/api/products/update/${editingProduct.id}`, updatedData);
 
       if (response.status === 200) {
         alert("Product updated successfully!");

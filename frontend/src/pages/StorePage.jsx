@@ -26,7 +26,7 @@ const StorePage = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/shops/${id}`)
+        axios.get(`/api/shops/${id}`)
             .then(response => {
                 setShop(response.data);
                 setLoading(false);
@@ -38,7 +38,7 @@ const StorePage = () => {
     }, [id]);
 
     useEffect(() => {
-        axios.get(`http://localhost:8080/api/products/shop/${id}`)
+        axios.get(`/api/products/shop/${id}`)
             .then(response => {
                 setProducts(response.data);
                 setProductsLoading(false);

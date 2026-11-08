@@ -67,13 +67,12 @@ metadata:
   name: travelmania-frontend
   namespace: travelmania
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: travelmania-frontend
   ports:
     - port: 80
       targetPort: 8080
-      nodePort: 30080
 ---
 # Alias 'backend' DNS name so Docker Compose nginx.conf proxy_pass http://backend:8080 works in K8s
 apiVersion: v1

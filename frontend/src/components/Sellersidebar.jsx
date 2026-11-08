@@ -33,7 +33,7 @@ const Sellersidebar = () => {
           } else if (userObj.id || userObj._id) {
             try {
               const userId = userObj.id || userObj._id;
-              const response = await axios.get(`http://localhost:8080/api/shops/user/${userId}`, {
+              const response = await axios.get(`/api/shops/user/${userId}`, {
                 headers: token ? { Authorization: `Bearer ${token}` } : {}
               });
               if (response.data) {
@@ -134,7 +134,7 @@ const Sellersidebar = () => {
 
     try {
       // 2. Send request with userId
-      const response = await axios.post('http://localhost:8080/api/shops/create', {
+      const response = await axios.post('/api/shops/create', {
         name: storeDetails.name,
         description: storeDetails.description,
         contactNo: storeDetails.contactNo,

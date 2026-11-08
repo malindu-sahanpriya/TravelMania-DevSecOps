@@ -24,7 +24,7 @@ export default function Rentals() {
   const fetchOrders = async () => {
     if (!shopId) return;
     try {
-      const response = await axios.get(`http://localhost:8080/api/orders/shop/${shopId}`);
+      const response = await axios.get(`/api/orders/shop/${shopId}`);
       // 👇 Only keep ACTIVE orders for the Rentals tab
       const activeOrders = response.data.filter(order => order.status === "ACTIVE");
       setOrders(activeOrders);
@@ -42,7 +42,7 @@ export default function Rentals() {
     if(!window.confirm("Are you sure you want to mark this rental as completed?")) return;
     
     try {
-      await axios.put(`http://localhost:8080/api/orders/${orderId}/status?status=COMPLETED`);
+      await axios.put(`/api/orders/${orderId}/status?status=COMPLETED`);
       alert("Order marked as completed!");
       fetchOrders(); // Refresh the list so it disappears from here
     } catch (error) {
